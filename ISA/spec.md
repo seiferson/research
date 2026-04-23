@@ -1,10 +1,6 @@
 # ISA Specification [v0.01][fly]
 
-version: `0.01`
-
 This project defines a small CPU emulator with a minimal but complete instruction set. The goal is to model a simple machine that is easy to implement, easy to document, and still capable of running general programs through branching, arithmetic, memory access, and stack-based subroutines.
-
-This document is the official specification for the first version of the emulator.
 
 ## Machine Model
 
