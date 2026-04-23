@@ -1,18 +1,10 @@
-# ISA Project Specification
+# ISA Specification [v0.01][fly]
 
-## Purpose
+version: `0.01`
 
 This project defines a small CPU emulator with a minimal but complete instruction set. The goal is to model a simple machine that is easy to implement, easy to document, and still capable of running general programs through branching, arithmetic, memory access, and stack-based subroutines.
 
 This document is the official specification for the first version of the emulator.
-
-## Design Goals
-
-- Keep the core architecture small and predictable.
-- Use a compact instruction set with fixed four-letter mnemonics.
-- Limit each instruction to one or two operands.
-- Support enough operations to express any program logic.
-- Make instruction behavior explicit so the emulator and assembler can be implemented from the same document.
 
 ## Machine Model
 
@@ -87,8 +79,6 @@ The assembly syntax supports the following operand types:
 | `mult` | `dest, src` | Multiplies `dest` by `src` and stores the low word of the result in `dest`. Updates `zero`, `nega`, and `ovfl`. |
 | `divi` | `dest, src` | Divides `dest` by `src` and stores the quotient in `dest`. Division by zero must raise an emulator fault. Updates `zero` and `nega`. |
 | `modu` | `dest, src` | Divides `dest` by `src` and stores the remainder in `dest`. Division by zero must raise an emulator fault. Updates `zero` and `nega`. |
-| `incr` | `dest` | Adds `1` to the destination register. Updates `zero`, `nega`, `carr`, and `ovfl`. |
-| `decr` | `dest` | Subtracts `1` from the destination register. Updates `zero`, `nega`, `carr`, and `ovfl`. |
 
 ### Logic and Bit Operations
 
@@ -138,36 +128,94 @@ This instruction set is intentionally small, but it is sufficient for general co
 - Stack operations for function calls and temporary storage.
 - A halting instruction for explicit program termination.
 
-## Assembly Conventions
+## Execution
 
-- Labels identify instruction addresses.
+The emulator binary name is fixed and must always be `cpuemu`.
+
+Programs are executed from the project root with this form:
+
+```sh
+./cpuemu <program_file>
+```
+
+Example:
+
+```sh
+./cpuemu program.inst
+```
+
+The first argument is the program file to evaluate.
+
+## Program File Format
+
+The runtime input file format is fixed-width and line-based so the emulator can read each instruction by direct substring split without token parsing.
+
+Each program file must follow these rules:
+
+- File extension should be `.inst`.
+- Use lowercase only for opcodes and operands.
+- Use one instruction per line.
+- Do not use labels in `.inst` files.
+- Do not use comments in `.inst` files.
+- Use numeric addresses directly when a jump target or memory address is needed.
+- Pad operand fields with spaces when an operand is shorter than its field width.
+- Leave unused operand fields as spaces.
+
+Each instruction line uses this layout:
+
+| Columns | Width | Field | Rule |
+| --- | --- | --- | --- |
+| `1-4` | `4` | `opcode` | Exactly one four-letter instruction mnemonic. |
+| `5` | `1` | `gap_1` | Must be one space. |
+| `6-15` | `10` | `arg_1` | First operand, left-aligned and space-padded. |
+| `16` | `1` | `gap_2` | Must be one space. |
+| `17-26` | `10` | `arg_2` | Second operand, left-aligned and space-padded. |
+
+This gives every instruction line a total width of `26` characters before the newline character.
+
+The emulator should read the line as:
+
+- `opcode = line[0:4]`
+- `arg_1 = line[5:15]`
+- `arg_2 = line[16:26]`
+
+After splitting by position, each field may be right-trimmed for trailing spaces before evaluation. No delimiter parsing is required.
+
+Allowed operand text inside each field keeps the same operand forms defined by this specification:
+
+- `r0` through `r7`
+- `#value`
+- `[addr]`
+- `[rn]`
+
+## Operand Conventions
+
 - Immediates use the `#` prefix.
 - Direct memory references use brackets, such as `[1024]`.
 - Indirect memory references use register brackets, such as `[r2]`.
-- Whitespace outside tokens is ignored.
-- Comments, if supported by the assembler, should start with `;`.
+- The first operand field is `dest` for two-operand instructions.
+- The second operand field is `src` for two-operand instructions.
 
 ## Example
 
-```asm
-move r1, #10
-move r2, #0
-
-loop:
-addi r2, r1
-decr r1
-test r1
-jnzr loop
-halt
+```text
+move r1         #10       
+move r2         #0        
+addi r2         r1        
+subt r1         #1        
+test r1                   
+jnzr #2                   
+halt                      
 ```
 
-This program accumulates the sum of values from `10` down to `1` into `r2`.
+This normalized `.inst` example accumulates the sum of values from `10` down to `1` into `r2`. The `jnzr #2` line jumps back to the instruction at line index `2`, using a resolved numeric target instead of a label.
 
 ## Emulator Requirements
 
 - The emulator must decode all mnemonics exactly as defined here.
 - Invalid opcodes must raise an emulator error.
 - Invalid operand forms must raise an emulator error.
+- Invalid line widths or invalid fixed-field spacing must raise an emulator error.
 - Division by zero must raise an emulator fault.
 - Stack underflow and stack overflow must raise emulator faults.
 - Program execution must stop on `halt` or on a fatal fault.
