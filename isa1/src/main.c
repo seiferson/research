@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-const char *emulator_tag = "[cpuemu][v0.01|fly]";
+
 
 typedef struct {
     unsigned short words[65536];
@@ -40,28 +40,14 @@ void move(cpu_t *cpu, const char *dest, const char *src)
     cpu->registers[dest_register] = value;
 }
 
-void log_message(const char *message, ...)
-{
-    va_list args;
 
-    printf("%s::", emulator_tag);
-
-    va_start(args, message);
-    vprintf(message, args);
-    va_end(args);
-
-    printf("\n");
-}
 
 char *split_token(char *value)
 {
     return strtok(value, " \r\n");
 }
 
-void left_pad_line_number(int line_number, char *value, size_t size)
-{
-    snprintf(value, size, "%5d", line_number);
-}
+
 
 int main(int argc, char **argv)
 {
@@ -74,8 +60,9 @@ int main(int argc, char **argv)
         char *mnemonic;
         int line_number = 1;
 
-        log_message("");
-        log_message("file::read::name [%s]", argv[1]);
+        log("");
+        log("file::read::name [")
+        log, argv[1]);
 
         file = fopen(argv[1], "r");
         if (file == NULL) {
