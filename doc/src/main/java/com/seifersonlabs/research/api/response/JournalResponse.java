@@ -16,6 +16,7 @@ public class JournalResponse {
     private String id;
     private String author;
     private String content;
+    private String title;
     private Date created;
     private Date modified;
     private List<JournalHistory> history;
@@ -27,6 +28,7 @@ public class JournalResponse {
         this.modified = journal.getModified();
         this.history = journal.getHistory();
         this.content = journal.getContent();
+        this.title = journal.getTitle();
     }
 
     public JournalResponse() {}
@@ -77,5 +79,13 @@ public class JournalResponse {
 
     public void setHistory(List<JournalHistory> history) {
         this.history = history;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

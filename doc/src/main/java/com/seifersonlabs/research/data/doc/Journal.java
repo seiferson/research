@@ -16,12 +16,13 @@ public class Journal {
 
     public Journal() {}
 
-    public Journal(String author, String content) {
+    public Journal(String author, String content, String title) {
         this.setHistory(new ArrayList<>());
         this.setCreated(new Date());
         this.setModified(new Date());
         this.setAuthor(author);
         this.setContent(content);
+        this.setTitle(title);
     }
 
     @Id
@@ -30,6 +31,9 @@ public class Journal {
     @NotBlank
     @Size(min = 4, max = 12)
     private String author;
+
+    @NotBlank
+    private String title;
 
     @NotBlank
     private String content;
@@ -92,6 +96,14 @@ public class Journal {
     }
 
     public void createRevision() {
-        this.getHistory().add(new JournalHistory(this.getContent()));
+        this.getHistory().add(new JournalHistory(this.getContent(), this.getTitle()));
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

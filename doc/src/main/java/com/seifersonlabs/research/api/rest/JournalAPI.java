@@ -32,7 +32,7 @@ public class JournalAPI {
     @PostMapping
     public Mono<JournalResponse> save(Principal principal, @RequestBody @Valid JournalRequest request) {
         return Mono
-                .just(new Journal(principal.getName(), request.getContent()))
+                .just(new Journal(principal.getName(), request.getContent(), request.getTitle()))
                 .flatMap(journalRepo::save)
                 .map(JournalResponse::new);
     }
@@ -69,6 +69,7 @@ public class JournalAPI {
                 .map(journal -> {
                         journal.createRevision();
                         journal.setContent(request.getContent());
+                        journal.setTitle(request.getTitle());
                         journal.setModified(new Date());
                         return journal;
                 })
