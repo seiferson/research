@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: research
+  config:
+    import: optional:file:.env[.properties]
+  mongodb:
+      uri: ${MONGODB_ATLAS_URI}
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
